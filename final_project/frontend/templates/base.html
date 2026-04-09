@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Dungeon Codex{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+  <nav class="site-nav">
+    <a href="{{ url_for('index') }}" class="nav-brand">&#9760; Dungeon Codex</a>
+    <ul class="nav-links">
+      <li><a href="{{ url_for('spells') }}"       class="{{ 'active' if request.endpoint == 'spells'       }}">Spells</a></li>
+      <li><a href="{{ url_for('items') }}"        class="{{ 'active' if request.endpoint == 'items'        }}">Items</a></li>
+      <li><a href="{{ url_for('monsters') }}"     class="{{ 'active' if request.endpoint == 'monsters'     }}">Monsters</a></li>
+      <li><a href="{{ url_for('environments') }}" class="{{ 'active' if request.endpoint == 'environments' }}">Environments</a></li>
+    </ul>
+  </nav>
+
+  <main class="site-main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash flash--{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <p>Dungeon Codex &mdash; A D&amp;D Relational Database Application</p>
+  </footer>
+
+</body>
+</html>

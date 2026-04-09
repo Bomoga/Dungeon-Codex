@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Dungeon Codex — Home{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>Welcome to the Dungeon Codex</h1>
+  <p class="hero-sub">Your complete reference for spells, items, monsters, and the realms they inhabit.</p>
+</section>
+
+<div class="dashboard-grid">
+
+  <!-- Environments panel -->
+  <section class="panel">
+    <h2>Environments</h2>
+    <div class="card-grid">
+      {% for env in environments %}
+      <div class="env-card">
+        <h3>{{ env[1] }}</h3>
+        <ul>
+          <li><span class="label">Terrain</span> {{ env[2] }}</li>
+          <li>
+            <span class="label">Danger</span>
+            <span class="badge badge--danger-{{ 'high' if env[3] >= 7 else ('mid' if env[3] >= 4 else 'low') }}">
+              {{ env[3] }}/10
+            </span>
+          </li>
+          <li><span class="label">Climate</span> {{ env[4] or '—' }}</li>
+          <li><span class="label">Magic</span> {{ env[5] }}/10</li>
+        </ul>
+      </div>
+      {% else %}
+      <p class="empty">No environments found.</p>
+      {% endfor %}
+    </div>
+    <a href="{{ url_for('environments') }}" class="link-more">View all &rarr;</a>
+  </section>
+
+  <!-- Monster roster panel -->
+  <section class="panel">
+    <h2>Monster Roster</h2>
+    {% if roster %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>CR</th>
+            <th>Name</th>
+            <th>Size</th>
+            <th>Type</th>
+            <th>Environments</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in roster %}
+          <tr>
+            <td class="cr">{{ m[2] }}</td>
+            <td><strong>{{ m[1] }}</strong></td>
+            <td>{{ m[5] }}</td>
+            <td>{{ m[6] }}</td>
+            <td class="envs">{{ m[7] or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="empty">No monsters found.</p>
+    {% endif %}
+    <a href="{{ url_for('monsters') }}" class="link-more">Search by environment &rarr;</a>
+  </section>
+
+</div>
+{% endblock %}

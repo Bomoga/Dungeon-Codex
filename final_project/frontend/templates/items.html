@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Dungeon Codex — Items{% endblock %}
+
+{% block content %}
+<h1>Magic Items</h1>
+
+<form method="GET" action="{{ url_for('items') }}" class="filter-form">
+  <label for="rarity">Filter by Rarity:</label>
+  <select id="rarity" name="rarity" onchange="this.form.submit()">
+    <option value="">— All Rarities —</option>
+    {% for r in rarities %}
+    <option value="{{ r }}" {{ 'selected' if selected_rarity == r }}>{{ r }}</option>
+    {% endfor %}
+  </select>
+  {% if selected_rarity %}
+  <a href="{{ url_for('items') }}" class="btn btn--small">Clear</a>
+  {% endif %}
+</form>
+
+{% if items %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Rarity</th>
+        <th>Activation</th>
+        <th>Damage / Healing</th>
+        <th>Dmg Type</th>
+        <th>Weight</th>
+        <th>Value (gp)</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in items %}
+      <tr>
+        <td>{{ i[0] }}</td>
+        <td><strong>{{ i[1] }}</strong></td>
+        <td>{{ i[2] }}</td>
+        <td><span class="badge badge--rarity-{{ i[3]|lower|replace(' ', '-') }}">{{ i[3] }}</span></td>
+        <td>{{ i[5] or '—' }}</td>
+        <td>{{ i[7] or '—' }}</td>
+        <td>{{ i[8] or '—' }}</td>
+        <td>{{ i[9] ~ ' lb' if i[9] is not none else '—' }}</td>
+        <td>{{ i[10] or '—' }}</td>
+        <td class="description">{{ i[4] or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="empty">No items found{% if selected_rarity %} for rarity "{{ selected_rarity }}"{% endif %}.</p>
+{% endif %}
+{% endblock %}

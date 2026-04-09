@@ -1,0 +1,204 @@
+--------------------------------------------------------------
+Q1: List All Spells by Level
+--------------------------------------------------------------
+Command:
+  SELECT spell_id, name, level, concentration, ritual, spell_save
+  FROM spell ORDER BY level, name;
+
+Output (first 5 rows):
+ spell_id | name         | level | concentration | ritual | spell_save
+----------+--------------+-------+---------------+--------+------------
+        1 | Fire Bolt    |     0 | false         | false  | [null]
+        2 | Cure Wounds  |     1 | false         | false  | [null]
+        6 | Detect Magic |     1 | true          | true   | [null]
+        3 | Misty Step   |     2 | false         | false  | [null]
+        4 | Fireball     |     3 | false         | false  | DEX
+
+Total row count: 7 rows
+
+
+--------------------------------------------------------------
+Q2: List All Items by Rarity
+--------------------------------------------------------------
+Command:
+  SELECT item_id, name, item_type, rarity, value_gp
+  FROM item ORDER BY rarity, name;
+
+Output (first 5 rows):
+ item_id | name            | item_type | rarity   | value_gp
+---------+-----------------+-----------+----------+---------
+       6 | Healing Potion  | Potion    | Common   |    50.00
+       5 | Spore Bomb      | Weapon    | Common   |    50.00
+       3 | Ember Cloak     | Armor     | Rare     |  1200.00
+       2 | Tidal Amulet    | Wondrous  | Rare     |   800.00
+       4 | Ashstep Boots   | Wondrous  | Uncommon |   400.00
+
+Total row count: 6 rows
+
+
+--------------------------------------------------------------
+Q3: Monsters in the Forgotten Forest
+--------------------------------------------------------------
+Command:
+  SELECT m.monster_id, m.name, m.challenge_rating, m.size
+  FROM monster m
+  JOIN monster_environment me ON me.monster_id = m.monster_id
+  JOIN environment e ON e.environment_id = me.environment_id
+  WHERE e.name = 'Forgotten Forest'
+  ORDER BY m.challenge_rating;
+
+Output (first 5 rows):
+ monster_id | name            | challenge_rating | size
+------------+-----------------+------------------+--------
+          1 | Shadow Wolf     |              1.0 | Medium
+          5 | Fungal Shambler |              2.0 | Medium
+
+Total row count: 2 rows
+
+
+--------------------------------------------------------------
+Q4: Monster Count per Environment
+--------------------------------------------------------------
+Command:
+  SELECT e.name AS environment, e.danger_level,
+         COUNT(me.monster_id) AS monster_count
+  FROM environment e
+  LEFT JOIN monster_environment me ON me.environment_id = e.environment_id
+  GROUP BY e.environment_id, e.name, e.danger_level
+  ORDER BY monster_count DESC, e.name;
+
+Output (first 5 rows):
+ environment      | danger_level | monster_count
+------------------+--------------+---------------
+ Crimson Caverns  |            9 |             4
+ Forgotten Forest |            7 |             2
+ Ashfield Plains  |            4 |             1
+ Merchant Road    |            1 |             1
+ Sunken Ruins     |            8 |             1
+
+Total row count: 6 rows
+
+
+--------------------------------------------------------------
+Q5: Items with Their Environment Name
+--------------------------------------------------------------
+Command:
+  SELECT i.name AS item, i.item_type, i.rarity,
+         COALESCE(e.name, 'N/A') AS found_in, i.value_gp
+  FROM item i
+  LEFT JOIN environment e ON e.environment_id = i.environment_id
+  ORDER BY i.rarity, i.name;
+
+Output (first 5 rows):
+ item            | item_type | rarity   | found_in         | value_gp
+-----------------+-----------+----------+------------------+---------
+ Healing Potion  | Potion    | Common   | N/A              |    50.00
+ Spore Bomb      | Weapon    | Common   | Forgotten Forest |    50.00
+ Ember Cloak     | Armor     | Rare     | Crimson Caverns  |  1200.00
+ Tidal Amulet    | Wondrous  | Rare     | Sunken Ruins     |   800.00
+ Ashstep Boots   | Wondrous  | Uncommon | Ashfield Plains  |   400.00
+
+Total row count: 6 rows
+
+
+--------------------------------------------------------------
+Q6: Concentration Spells
+--------------------------------------------------------------
+Command:
+  SELECT name, level, duration, spell_save
+  FROM spell WHERE concentration = TRUE
+  ORDER BY level, name;
+
+Output (first 5 rows):
+ name         | level | duration | spell_save
+--------------+-------+----------+------------
+ Detect Magic |     1 |       10 | [null]
+ Hold Monster |     5 |       60 | WIS
+
+Total row count: 2 rows
+
+
+--------------------------------------------------------------
+Q7: Average CR by Monster Size
+--------------------------------------------------------------
+Command:
+  SELECT size,
+         ROUND(AVG(challenge_rating)::NUMERIC, 2) AS avg_cr,
+         COUNT(*) AS monster_count
+  FROM monster
+  GROUP BY size ORDER BY avg_cr DESC;
+
+Output (first 5 rows):
+ size   | avg_cr | monster_count
+--------+--------+---------------
+ Large  |   6.50 |             2
+ Medium |   3.00 |             3
+ Tiny   |   0.30 |             1
+
+Total row count: 3 rows
+
+
+--------------------------------------------------------------
+Q8: Full Monster Roster (from v_monster_roster view)
+--------------------------------------------------------------
+Command:
+  SELECT monster_id, name, challenge_rating, size, type_name,
+         COALESCE(environments, 'None') AS environments
+  FROM v_monster_roster
+  ORDER BY challenge_rating, name;
+
+Output (first 5 rows):
+ monster_id | name            | challenge_rating | size   | type_name | environments
+------------+-----------------+------------------+--------+-----------+-------------------------------------
+          6 | Cave Sprite     |              0.3 | Tiny   | Beast     | Crimson Caverns, Merchant Road
+          1 | Shadow Wolf     |              1.0 | Medium | Beast     | Forgotten Forest
+          5 | Fungal Shambler |              2.0 | Medium | Plant     | Crimson Caverns, Forgotten Forest
+          2 | Cave Troll      |              5.0 | Large  | Beast     | Crimson Caverns
+          3 | Sea Wraith      |              6.0 | Medium | Undead    | Sunken Ruins
+
+Total row count: 6 rows
+
+
+--------------------------------------------------------------
+Q9: Spells with Window Function (count per level + rank)
+--------------------------------------------------------------
+Command:
+  SELECT name, level,
+         COUNT(*) OVER (PARTITION BY level) AS spells_at_this_level,
+         ROW_NUMBER() OVER (ORDER BY level, name) AS overall_rank
+  FROM spell ORDER BY level, name;
+
+Output (first 5 rows):
+ name         | level | spells_at_this_level | overall_rank
+--------------+-------+----------------------+--------------
+ Fire Bolt    |     0 |                    1 |            1
+ Cure Wounds  |     1 |                    2 |            2
+ Detect Magic |     1 |                    2 |            3
+ Misty Step   |     2 |                    1 |            4
+ Fireball     |     3 |                    1 |            5
+
+Total row count: 7 rows
+
+
+--------------------------------------------------------------
+Q10: Monsters in High-Danger Environments (danger_level >= 7)
+--------------------------------------------------------------
+Command:
+  SELECT e.name AS environment, e.danger_level, e.terrain_type,
+         m.name AS monster, m.challenge_rating
+  FROM environment e
+  JOIN monster_environment me ON me.environment_id = e.environment_id
+  JOIN monster m ON m.monster_id = me.monster_id
+  WHERE e.danger_level >= 7
+  ORDER BY e.danger_level DESC, m.challenge_rating DESC;
+
+Output (first 5 rows):
+ environment      | danger_level | terrain_type | monster         | challenge_rating
+------------------+--------------+--------------+-----------------+------------------
+ Crimson Caverns  |            9 | Cave         | Ember Drake     |              8.0
+ Crimson Caverns  |            9 | Cave         | Cave Troll      |              5.0
+ Crimson Caverns  |            9 | Cave         | Fungal Shambler |              2.0
+ Crimson Caverns  |            9 | Cave         | Cave Sprite     |              0.3
+ Sunken Ruins     |            8 | Underwater   | Sea Wraith      |              6.0
+
+Total row count: 7 rows

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Dungeon Codex — Monsters{% endblock %}
+
+{% block content %}
+<h1>Monsters by Environment</h1>
+
+<form method="GET" action="{{ url_for('monsters') }}" class="filter-form">
+  <label for="environment">Choose Environment:</label>
+  <select id="environment" name="environment" onchange="this.form.submit()">
+    <option value="">— Select an Environment —</option>
+    {% for env in environments %}
+    <option value="{{ env[1] }}" {{ 'selected' if selected_env == env[1] }}>
+      {{ env[1] }} (Danger {{ env[3] }})
+    </option>
+    {% endfor %}
+  </select>
+</form>
+
+{% if selected_env %}
+  <h2>Monsters in: <em>{{ selected_env }}</em></h2>
+  {% if monsters %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>CR</th>
+          <th>Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in monsters %}
+        <tr>
+          <td>{{ m[0] }}</td>
+          <td><span class="badge badge--cr">{{ m[2] }}</span></td>
+          <td><strong>{{ m[1] }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty">No monsters found in <strong>{{ selected_env }}</strong>.</p>
+  {% endif %}
+{% else %}
+<p class="hint">Select an environment above to see which monsters inhabit it.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Dungeon Codex — Spells{% endblock %}
+
+{% block content %}
+<h1>Spells</h1>
+
+{% if spells %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Level</th>
+        <th>Name</th>
+        <th>Cast Time</th>
+        <th>Range</th>
+        <th>Duration</th>
+        <th>Conc.</th>
+        <th>Ritual</th>
+        <th>Save</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in spells %}
+      <tr>
+        <td>{{ s[0] }}</td>
+        <td><span class="badge badge--level">{{ s[2] }}</span></td>
+        <td><strong>{{ s[1] }}</strong></td>
+        <td>{{ s[3] }} action{{ 's' if s[3] != 1 }}</td>
+        <td>{{ s[4] ~ ' ft' if s[4] else 'Self' }}</td>
+        <td>{{ s[5] ~ ' min' if s[5] else 'Instant' }}</td>
+        <td>{{ '✓' if s[6] else '—' }}</td>
+        <td>{{ '✓' if s[7] else '—' }}</td>
+        <td>{{ s[8] or '—' }}</td>
+        <td class="description">{{ s[9] or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="empty">No spells found.</p>
+{% endif %}
+
+<section class="form-section">
+  <h2>Add a Spell</h2>
+  <form method="POST" action="{{ url_for('spells') }}" class="codex-form">
+    <div class="form-group">
+      <label for="name">Spell Name</label>
+      <input type="text" id="name" name="name" placeholder="e.g. Lightning Bolt" required />
+    </div>
+    <div class="form-group">
+      <label for="level">Level (0 = cantrip)</label>
+      <input type="number" id="level" name="level" min="0" max="9" value="0" required />
+    </div>
+    <button type="submit" class="btn">Inscribe Spell</button>
+  </form>
+</section>
+{% endblock %}
